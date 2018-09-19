@@ -9,6 +9,6 @@ LIST* create_list(void); //funcao que cria a lista para armazenar os sites
 
 LIST* scan_file(FILE* fp, int n_lines); //funcao que escaneia o arquivo, recebe o arquivo e o numero de linhas dele
 
-void print_list(LIST* l);
+void print_list(LIST* l); //funcao que printa a lista de sites
 
 #endif
