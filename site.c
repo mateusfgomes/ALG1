@@ -12,6 +12,7 @@ struct site{
 	int relevance; //relevancia
 	char link[101]; //link
 	char keywords[10][51]; //palavras-chave
+	int n_keywords[10];
 	SITE* next; //proximo site
 	
 };
@@ -34,7 +35,7 @@ SITE* create_site(void){
 	return(create);
 }
 
-void prepare_site(FILE* fp, SITE* s, int i, int j){
+void prepare_site(FILE* fp, SITE* s, int i, int j, int position){
 
 	char aux; //esse auxiliar servira' para escanear char por char do que nao for numeros
 	char c; //char c que so' tem a funcao de armazenar as virgulas para descarte
@@ -92,6 +93,7 @@ void prepare_site(FILE* fp, SITE* s, int i, int j){
 			j = 0; //resentando o j para uma nova palavra chave
 			i++; //indo para a proxima palavra-chave
 		}
+		s->n_keywords[position] = i;
 		fscanf(fp, "%c", &aux); //escaneando char por char das palavras-chave para avaliar se nao e' \n
 	}
 }
@@ -104,16 +106,25 @@ void next_site(SITE* a, SITE* aux){
 
 }
 
-//recursao que printa os sites
-void print_site(SITE* site){
+//recursao que printa os sites, recebe o site e um contador
+void print_site(SITE* site, int* h){
 
-	printf("%d ", site->code);
-	printf("%s ", site->name);
-	printf("%d ", site->relevance);
-	printf("%s ", site->link);
-	printf("%s %s %s\n", site->keywords[0], site->keywords[1], site->keywords[2]);
-	site = site->next;
+	*h = *h + 1;
+	int j = 0;
 
-	if (site != NULL) print_site(site);//enquanto o site nao for null, printa os sites
+	printf("%d, ", site->code);
+	printf("%s, ", site->name);
+	printf("%d, ", site->relevance);
+	printf("%s, ", site->link);
+
+	//while para printar as n palavras chave de cada site
+	while(j <= site->n_keywords[*h]){
+		printf("%s ", site->keywords[j]);
+		j++;
+	}
+	printf("\n");
+	site = site->next; //indo para o proximo site
+
+	if (site != NULL) print_site(site, h);//enquanto o site nao for null, printa os sites
 
 }
