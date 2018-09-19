@@ -44,23 +44,22 @@ LIST* scan_file(FILE* fp, int n_lines){
 	int j = 0;
 
 	s = create_site(); //s recebe o site criado
-	prepare_site(fp, s, i, j);
+	prepare_site(fp, s, i, j, l->size);
 	l->start = s; //o comeco da lista recebe o primeiro site
 	l->end = s;
 	l->size++;
 
 	while(l->size < n_lines){ //enquanto o contador (que conta quantas linhas ja foram lidas) for menor que o numero de linhas, segue
-		auxiliar = create_site();
-		next_site(s, auxiliar);
-		prepare_site(fp, auxiliar, i, j);	
-		l->end = auxiliar;
-		//printf("%d %d", l->size, n_lines);
+		auxiliar = create_site(); //usando um auxiliar para poder conectar os no's da lista
+		next_site(s, auxiliar); //conectando s ao auxiliar
+		prepare_site(fp, auxiliar, i, j, l->size); //recebendo os dados no site
+		l->end = auxiliar; //o ultimo item da lista e' o auxiliar recem-criado
 		l->size++; //aumenta o tamanho da lista
-		if(l->size == n_lines) break;
-		s = create_site();
+		if(l->size == n_lines) break; //se ainda nao chegou no final do arquivo, continua conectando
+		s = create_site(); //a mesma logica das 6 linhas acima, cria um site, aponta o anterior pra ele, prepara, e coloca o fim nele
 		next_site(auxiliar, s);
-		prepare_site(fp, s, i, j);	
-		l->end = auxiliar;
+		prepare_site(fp, s, i, j, l->size);	
+		l->end = s;
 		l->size++; //aumenta o tamanho da lista
 	}
 
@@ -74,10 +73,12 @@ LIST* scan_file(FILE* fp, int n_lines){
 //funcao que printa os sites de uma determinada lista, recebe essa lista como parametro
 void print_list(LIST* list){
 
+	int i = -1;
+
 	SITE* site; //site auxiliar
 
 	site = list->start; //esse site recebe o inicio da lista
 
-	print_site(site); //executa a funcao recursiva
+	print_site(site, &i); //executa a funcao recursiva
 
 }
