@@ -31,10 +31,12 @@ LIST* create_list(void){
 }
 
 //escaneando o arquivo, essa funcao recebe o ponteiro para o arquivo a ser escaneado e o numero
+//escaneando o arquivo, essa funcao recebe o ponteiro para o arquivo a ser escaneado e o numero
 LIST* scan_file(FILE* fp, int n_lines){
 	
 	LIST* l; //ponteiro para lista
 	SITE* s; //ponteiro para site
+	SITE* auxiliar;
 
 	l = create_list(); //lista l recebe a lista criada
 
@@ -42,16 +44,41 @@ LIST* scan_file(FILE* fp, int n_lines){
 	int j = 0;
 
 	s = create_site(); //s recebe o site criado
+	prepare_site(fp, s, i, j);
 	l->start = s; //o comeco da lista recebe o primeiro site
+	l->end = s;
+	l->size++;
+
 	while(l->size < n_lines){ //enquanto o contador (que conta quantas linhas ja foram lidas) for menor que o numero de linhas, segue
-
-		prepare_site(fp, s, i, j);
-		l->end = s; //o fim recebe o ultimo site que foi criado
+		auxiliar = create_site();
+		next_site(s, auxiliar);
+		prepare_site(fp, auxiliar, i, j);	
+		l->end = auxiliar;
+		//printf("%d %d", l->size, n_lines);
 		l->size++; //aumenta o tamanho da lista
-		next_site(s, l->size, n_lines);
-		printf("\n");
-
+		if(l->size == n_lines) break;
+		s = create_site();
+		next_site(auxiliar, s);
+		prepare_site(fp, s, i, j);	
+		l->end = auxiliar;
+		l->size++; //aumenta o tamanho da lista
 	}
 
+	if(l->start == NULL) printf("inicio null\n");
+	if(l->end == NULL) printf("fim null\n");
+
 	return l; //retorna a lista
+}
+
+
+/* FALTA FAZER o segundo site esta sendo null*/
+void print_list(LIST* list){
+
+	SITE* site;
+	SITE* site_next;
+
+	site = list->start;
+
+	print_site(site);
+
 }
