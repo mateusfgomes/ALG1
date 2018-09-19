@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "googlebot.h"
+#include "list.h"
 
 //funcao para contar o numero de linhas do arquivo (conta as quebras de linha '\n's)
 int count_lines(FILE* file){
