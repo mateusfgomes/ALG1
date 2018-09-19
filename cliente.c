@@ -29,7 +29,7 @@ int main(void){
 
 	l = scan_file(fp, n_lines); //le o arquivo
 
-	print_list(l);
+	print_list(l); //printa a lista que acabou de ser retirada do arquivo
 	
 	return 0;
 }
