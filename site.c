@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "site.h"
-#define DEBUG 1
+#define DEBUG 0
 
 //definindo a estrutura de um so site
 struct site{
@@ -27,6 +27,7 @@ SITE* create_site(void){
 	if (create != NULL){
 		create->code = 0; //zerando o codigo
 		create->relevance = 0; //zerando a relevancia
+		create->next = NULL;
 	}
 	
 	//retornando o site criado
@@ -93,17 +94,24 @@ void prepare_site(FILE* fp, SITE* s, int i, int j){
 		}
 		fscanf(fp, "%c", &aux); //escaneando char por char das palavras-chave para avaliar se nao e' \n
 	}
+	s = s->next;
 }
 
-void next_site(SITE* s, int first, int last){
+void next_site(SITE* a, SITE* aux){
 
-	if(first < last){
-		s->next = create_site();
-		s = s->next;
-	}
+	a->next = aux;
 
-	else{
-		s->next = NULL;
-	}
+}
+
+void print_site(SITE* site){
+
+	printf("%d ", site->code);
+	printf("%s ", site->name);
+	printf("%d ", site->relevance);
+	printf("%s ", site->link);
+	printf("%s %s %s\n", site->keywords[0], site->keywords[1], site->keywords[2]);
+	site = site->next;
+
+	if (site != NULL) print_site(site);
 
 }
