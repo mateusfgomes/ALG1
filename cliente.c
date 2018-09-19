@@ -28,6 +28,8 @@ int main(void){
 	rewind(fp); //volta ao inicio do arquivo
 
 	l = scan_file(fp, n_lines); //le o arquivo
+
+	print_list(l);
 	
 	return 0;
 }
