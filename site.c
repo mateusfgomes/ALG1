@@ -94,15 +94,17 @@ void prepare_site(FILE* fp, SITE* s, int i, int j){
 		}
 		fscanf(fp, "%c", &aux); //escaneando char por char das palavras-chave para avaliar se nao e' \n
 	}
-	s = s->next;
 }
 
+//funcao que conecta os sites (encadeia), recebe dois sites
+//o site a recebe, em next, o site aux
 void next_site(SITE* a, SITE* aux){
 
 	a->next = aux;
 
 }
 
+//recursao que printa os sites
 void print_site(SITE* site){
 
 	printf("%d ", site->code);
@@ -112,6 +114,6 @@ void print_site(SITE* site){
 	printf("%s %s %s\n", site->keywords[0], site->keywords[1], site->keywords[2]);
 	site = site->next;
 
-	if (site != NULL) print_site(site);
+	if (site != NULL) print_site(site);//enquanto o site nao for null, printa os sites
 
 }
