@@ -9,7 +9,7 @@ void prepare_site(FILE* fp, SITE* s, int i, int j); //funcao que prepara um site
 
 void next_site(SITE* a, SITE* aux); //funcao que cria um novo site para encadear a lista
 
-void print_site(SITE* site);
+void print_site(SITE* site); //funcao recursiva que printa os dados de um site
 
 
 #endif
