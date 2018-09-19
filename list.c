@@ -71,14 +71,13 @@ LIST* scan_file(FILE* fp, int n_lines){
 }
 
 
-/* FALTA FAZER o segundo site esta sendo null*/
+//funcao que printa os sites de uma determinada lista, recebe essa lista como parametro
 void print_list(LIST* list){
 
-	SITE* site;
-	SITE* site_next;
+	SITE* site; //site auxiliar
 
-	site = list->start;
+	site = list->start; //esse site recebe o inicio da lista
 
-	print_site(site);
+	print_site(site); //executa a funcao recursiva
 
 }
