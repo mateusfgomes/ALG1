@@ -56,7 +56,7 @@ void delete_node(NODE *N){
 LIST* scan_file(FILE* fp, int n_lines){
 	LIST *L = create_list(); 
 	SITE *S;
-	printf("linhas = %d\n", n_lines);
+	printf("lista size = %d\n", L->size);
 	while(L->size < n_lines){
 		S = read_file_sites(fp);
 		if(list_insertion(L, S)) printf("NOVO SITE INSERIDO COM SUCESSO...\n");
@@ -64,37 +64,36 @@ LIST* scan_file(FILE* fp, int n_lines){
 	return L; //retorna a lista
 }
 
-int list_insertion(LIST *L, SITE *S){ 			/* DEPOIS TROCAR PARA INSERÇÃO COM ORDENAÇÃO*/
+int list_insertion(LIST *L, SITE *S){ 			
 	if(L == NULL || S == NULL) return ERROR;
 	NODE *aux = (NODE *) malloc(sizeof(NODE));
 	NODE *front = (NODE *) malloc(sizeof(NODE));
 	NODE *back = (NODE *) malloc(sizeof(NODE));
-	
+	printf("\n\nCHAMOU A FUNCAO\n\n");
 	if(aux != NULL){
 		aux->site = S;
 		aux->next = NULL;
 		front = L->start;
-		back->next = front;
+		back->next = L->start;
 		/*CASO DE PRIMEIRO ELEMENTO*/
 		if(empty_list(L)){
 			L->start = aux;
 		}else{ /*CASO DE QUALQUER ELEMENTO QUE NÃO O PRIMEIRO*/
 			while(front != NULL){
-				printf("CODIGO DO FRONT: %d\n", site_code(front->site));
-				printf("CODIGO DO AUX: %d\n", site_code(aux->site));
-				printf("CODIGO DO BACK: %d\n", site_code(back->site));
-				
 				if((site_code(front->site) > site_code(aux->site)) && (site_code(back->site) < site_code(aux->site))){
-					if(back->site == NULL){
+					if(back->next == L->start){
+						//printf("ENTROU AQUI\n");
 						L->start = aux;
 						aux->next = front;
+						L->size++;
 						return 1;
 					} 
-
-					back->next = aux;
-					aux->next = front;
-
-					return 1;
+					else{
+						back->next = aux;
+						aux->next = front;
+						L->size++;
+						return 1;
+					}
 				}
 				else{
 					front = front->next;
@@ -103,11 +102,10 @@ int list_insertion(LIST *L, SITE *S){ 			/* DEPOIS TROCAR PARA INSERÇÃO COM OR
 
 			}
 			if(front == NULL){
-				L->end = aux;
-				back->next = aux; 
-				aux->next = front;
+				L->end->next = aux;
 			}
 		}
+		L->end = aux;
 		L->size++;
 		return 1; /*SUCESSO*/
  	}
@@ -131,7 +129,7 @@ void print_list(LIST *L){
 			print_site(aux->site);
 			aux = aux->next;
 		}
-		print_site(aux->site); /*Imprime o último site da lista*/
+		if(aux->site != NULL) print_site(aux->site); /*Imprime o último site da lista*/
 	}		
 }
 
