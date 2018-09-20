@@ -1,84 +1,174 @@
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "list.h"
-#include "site.h"
 #define ERROR 505
 #define DEBUG 0
 
 //lista de sites, contem um site no inicio e um no final e o tamanho
-struct list{
-	
-	SITE* start; //primeiro
-	SITE* end; //ultimo
-	int size; //tamanho da lista
-	
+struct list{	
+	NODE *start; //primeiro
+	NODE *end; //ultimo
+	int size; //tamanho da lista	
+};
+
+struct node{
+	SITE *site;
+	NODE *next;
 };
 
 //funcao que cria uma lista e retorna essa
-LIST* create_list(void){
-	LIST* L; //declarado um ponteiro para lista
-	L = (LIST*) malloc(sizeof(LIST)); //alocando a lista na heap
-	
+LIST *create_list(void){
+	LIST *L; //declarado um ponteiro para lista
+	L = (LIST *) malloc(sizeof(LIST)); //alocando a lista na heap
 	//se alocou, entra
 	if(L != NULL){
 		L->start = NULL; //nenhum item no comeco da lista
 		L->end = NULL; //nenhum item no final da lista
 		L->size = 0; //portanto, lista vazia
-	}
-	
-	return(L);//retorna a lista vazia
-	
+	}	
+	return(L);//retorna a lista vazia	
 }
 
-//escaneando o arquivo, essa funcao recebe o ponteiro para o arquivo a ser escaneado e o numero
-//escaneando o arquivo, essa funcao recebe o ponteiro para o arquivo a ser escaneado e o numero
+void delete_list(LIST *L){
+	if(L != NULL && !empty_list(L)){
+   		NODE *N = L->start, *aux;
+    	while(N != L->end){
+       	 	aux = N;
+       	 	N = N->next;
+        	delete_node(aux);
+        }
+    	delete_node(N); //Deleta o último nó
+    	L->start = NULL;
+    	L->end = NULL;
+		free(L);
+		L = NULL;
+	}
+}
+
+void delete_node(NODE *N){
+	if(N != NULL){
+		free(N->site);
+		free(N);
+		N = NULL;
+	}
+}
+
 LIST* scan_file(FILE* fp, int n_lines){
-	
-	LIST* l; //ponteiro para lista
-	SITE* s; //ponteiro para site
-	SITE* auxiliar;
-
-	l = create_list(); //lista l recebe a lista criada
-
-	int i = 0; //variaveis i, j sao auxiliares
-	int j = 0;
-
-	s = create_site(); //s recebe o site criado
-	prepare_site(fp, s, i, j, l->size);
-	l->start = s; //o comeco da lista recebe o primeiro site
-	l->end = s;
-	l->size++;
-
-	while(l->size < n_lines){ //enquanto o contador (que conta quantas linhas ja foram lidas) for menor que o numero de linhas, segue
-		auxiliar = create_site(); //usando um auxiliar para poder conectar os no's da lista
-		next_site(s, auxiliar); //conectando s ao auxiliar
-		prepare_site(fp, auxiliar, i, j, l->size); //recebendo os dados no site
-		l->end = auxiliar; //o ultimo item da lista e' o auxiliar recem-criado
-		l->size++; //aumenta o tamanho da lista
-		if(l->size == n_lines) break; //se ainda nao chegou no final do arquivo, continua conectando
-		s = create_site(); //a mesma logica das 6 linhas acima, cria um site, aponta o anterior pra ele, prepara, e coloca o fim nele
-		next_site(auxiliar, s);
-		prepare_site(fp, s, i, j, l->size);	
-		l->end = s;
-		l->size++; //aumenta o tamanho da lista
+	LIST *L = create_list(); 
+	SITE *S;
+	printf("linhas = %d\n", n_lines);
+	while(L->size < n_lines){
+		S = read_file_sites(fp);
+		if(list_insertion(L, S)) printf("NOVO SITE INSERIDO COM SUCESSO...\n");
 	}
-
-	if(l->start == NULL) printf("inicio null\n");
-	if(l->end == NULL) printf("fim null\n");
-
-	return l; //retorna a lista
+	return L; //retorna a lista
 }
 
+int list_insertion(LIST *L, SITE *S){ 			/* DEPOIS TROCAR PARA INSERÇÃO COM ORDENAÇÃO*/
+	if(L == NULL || S == NULL) return ERROR;
+	NODE *aux = (NODE *) malloc(sizeof(NODE));
+	NODE *front = (NODE *) malloc(sizeof(NODE));
+	NODE *back = (NODE *) malloc(sizeof(NODE));
+	
+	if(aux != NULL){
+		aux->site = S;
+		aux->next = NULL;
+		front = L->start;
+		back->next = front;
+		/*CASO DE PRIMEIRO ELEMENTO*/
+		if(empty_list(L)){
+			L->start = aux;
+		}else{ /*CASO DE QUALQUER ELEMENTO QUE NÃO O PRIMEIRO*/
+			while(front != NULL){
+				printf("CODIGO DO FRONT: %d\n", site_code(front->site));
+				printf("CODIGO DO AUX: %d\n", site_code(aux->site));
+				printf("CODIGO DO BACK: %d\n", site_code(back->site));
+				
+				if((site_code(front->site) > site_code(aux->site)) && (site_code(back->site) < site_code(aux->site))){
+					if(back->site == NULL){
+						L->start = aux;
+						aux->next = front;
+						return 1;
+					} 
 
-//funcao que printa os sites de uma determinada lista, recebe essa lista como parametro
-void print_list(LIST* list){
+					back->next = aux;
+					aux->next = front;
 
-	int i = -1;
+					return 1;
+				}
+				else{
+					front = front->next;
+					back = back->next;
+				}
 
-	SITE* site; //site auxiliar
+			}
+			if(front == NULL){
+				L->end = aux;
+				back->next = aux; 
+				aux->next = front;
+			}
+		}
+		L->size++;
+		return 1; /*SUCESSO*/
+ 	}
+	return 0; /*FALHA*/
+}
 
-	site = list->start; //esse site recebe o inicio da lista
+int empty_list(LIST *L){
+	if(L != NULL && L->start == NULL) return 1;
+ 	return 0;
+}
 
-	print_site(site, &i); //executa a funcao recursiva
+int list_size(LIST *L){
+	return (L != NULL ? L->size : ERROR);
+}
 
+void print_list(LIST *L){
+	NODE *aux = NULL;
+	if(L != NULL && !empty_list(L)){
+		aux = L->start;
+		while(aux != L->end){			
+			print_site(aux->site);
+			aux = aux->next;
+		}
+		print_site(aux->site); /*Imprime o último site da lista*/
+	}		
+}
+
+int list_remove(LIST *L, int code){
+	NODE *p, *aux = NULL;
+	if(L != NULL && !empty_list(L)){
+		p = L->start;
+		while((p != NULL) && (site_code(p->site) != code)){
+			aux = p; /* aux_busca recebe o nó anterior de aux_remocao*/
+			p = p->next;
+		}
+		if(p != NULL){
+			if(p == L->start){ /*Exceção: chave no inicio*/
+				L->start = p->next;
+				p->next = NULL;
+			}else{
+				aux->next = p->next;
+				p->next = NULL;
+			}
+			if(p == L->end){ /* Se a chave está no último nó*/
+				L->end = aux;
+			}
+			L->size--;
+			delete_node(p);	
+			return 1;
+		}
+	}
+	return 0;
+}
+
+SITE *list_search(LIST *L, int code){
+	NODE *aux = L->start;
+	if(L != NULL){
+		while(aux != NULL){
+			if(site_code(aux->site) == code) return aux->site;
+			aux = aux->next;
+		}
+	}
+	return NULL; //Erro de não achar um site com o código dado
 }
