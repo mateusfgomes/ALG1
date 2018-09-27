@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "list.h"
 #include "site.h"
 
@@ -50,17 +51,13 @@ void insert_site(LIST *L){
 	printf("Digite os seguintes elementos do novo site:\n");
 	printf("Codigo(int) = ");
 	/*trecho que checa se o que foi digitado e' um numero ou nao*/
-	int aux = 0;
-	char check;
-	scanf(" %c", &check);
-	while((int)check <= 47 || (int)check >= 58){
-		if(aux == 0) printf("Por favor, digite um numero!\n");
-		aux = 1;
-		printf("Codigo(int) = ");
-		scanf(" %c", &check);
-	}
+	int code = 0;
+	int verify;
+
+	verify = check_code(&code);
+	if(verify == -1) return;
+
 	/*fazendo conversao de char para armazenar num int*/
-	int code = (int) (check - 48); 
 	/*Se achar o código na lista, não insere um novo site;*/
 	if(code_found(L, code)){
 		printf("ERRO --> codigo digitado ja existe\n");
@@ -78,8 +75,12 @@ void insert_site(LIST *L){
 void remove_site(LIST *L){
 	printf("Você escolheu remover um site.\n");	
 	printf("Digite o código do site a ser removido: ");
-	int code;
-	scanf("%d", &code);
+	int code = 0;
+	int verify;
+
+	verify = check_code(&code);
+	if(verify == -1) return;
+
 	/*Se não encontrar o código na lista, não remove;*/
 	if(!code_found(L, code)){
 		printf("ERRO --> site com este código não exite.\n");
@@ -94,8 +95,12 @@ void remove_site(LIST *L){
 void insert_keyword(LIST *L){
 	printf("Você escolheu inserir uma nova palavra-chave.\n");	
 	printf("Digite o código do site que vai receber a nova palavra-chave: ");
-	int code;
-	scanf("%d", &code);
+	int code = 0;
+	int verify;
+
+	verify = check_code(&code);
+	if(verify == -1) return;
+
 	if(new_keyword(list_search(L, code))) printf("Palavra-chave adicionada com sucesso!\n");;		
 }
 
@@ -106,8 +111,11 @@ void insert_keyword(LIST *L){
 void update_relevance(LIST *L){
 	printf("Você escolheu atualizar a relevância de um site.\n");	
 	printf("Digite o código do site que vai ter a relevância atualizada: ");
-	int code;
-	scanf("%d", &code);
+	int code = 0;
+	int verify;
+
+	verify = check_code(&code);
+	if(verify == -1) return;
 	if(change_relevance(list_search(L, code))) printf("Relevância atualizada com sucesso!\n"); 	
 }
 
@@ -119,16 +127,42 @@ int main(void){
 		printf("ERRO AO ABRIR ARQUIVO DE LEITURA.\n");
 		return 0;
 	}
+	char* check;
+	int size;
+	int opc = 0;
+
 	printf("Arquivo de leitura aberto...\n");
 	n_lines = count_lines(fp); /*conta as linhas*/
 	rewind(fp); /*volta ao inicio do arquivo*/
 	L = scan_file(fp, n_lines); /*le o arquivo*/
 	printf("Arquivo de leitura lido com sucesso...\n");
-	int opc = 0;
 	print_intro();
+	print_menu();
+	scanf("%ms", &check);
+	size = strlen(check);
+
+	for(int i = 0; i < size; i++){
+		if(check[i] <= 47 || check[i] >= 58){
+			printf("ERRO. Liberando dados e fechando arquivo...\n");
+			printf("Re-execute o programa e digite apenas numeros na opção!!\n");
+			delete_list(L);
+			fclose(fp);
+			printf("FIM DA EXECUÇÃO.\n");
+			free(check);
+			return 1;	
+		}
+		opc += (int) (check[i] - 48) * pow(10, i);
+	}
+
 	while(opc != 5){	
-		print_menu();	
-		scanf("%d", &opc);
+		int i = 0;
+		if(opc > 6){ 
+			printf("ERRO --> OPÇÃO INVÁLIDA.\nPor favor, digite uma das opções apresentadas\n");
+			print_menu();
+			scanf("%d", &opc);
+			continue;
+		}
+		if (check != NULL) free(check);
 		switch(opc){
 			case 1: insert_site(L);
 				break;	
@@ -144,7 +178,25 @@ int main(void){
 				printf("Você escolheu ver todos os sites:\n");
 				print_list(L);
 				break;		
-			default: printf("ERRO --> OPÇÃO INVÁLIDA.\nPor favor, digite uma das opções apresentadas:\n");
+				
+				scanf("%ms", &check);
+				free(check);
+		}
+		print_menu();
+		scanf("%ms", &check);
+		size = strlen(check);
+		opc = 0;
+		for(int i = 0; i < size; i++){
+			if(check[i] <= 47 || check[i] >= 58){
+				printf("ERRO. Liberando dados e fechando arquivo...\n");
+				printf("Re-execute o programa e digite apenas numeros na opção!!\n");
+				delete_list(L);
+				fclose(fp);
+				printf("FIM DA EXECUÇÃO.\n");
+				free(check);
+				return 1;	
+			}
+			opc += (int) (check[i] - 48) * pow(10, i);
 		}
 	}
 
@@ -154,6 +206,7 @@ int main(void){
 		printf("ERRO AO ESCREVER NO ARQUIVO DE SAÍDA.\n");
 		return 0;
 	}
+	if (check != NULL) free(check);
 	printf("Armazenando dados no arquivo...\n");
 	update_file(fp, L);
 	printf("Dados armazenados com sucesso!\n");
