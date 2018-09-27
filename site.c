@@ -40,6 +40,7 @@ int check_code(int* code){
 		*code += (int) (check[i] - 48)* pow(10, j--);
 	}
 
+	return check_size;
 }
 
 /*Função create_site:
