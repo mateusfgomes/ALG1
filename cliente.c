@@ -56,6 +56,10 @@ void insert_site(LIST *L){
 
 	verify = check_code(&code);
 	if(verify == -1) return;
+	else if(verify > 4){
+		printf("Insira um numero com menos de 4 digitos\n");
+		return;
+	} 
 
 	/*fazendo conversao de char para armazenar num int*/
 	/*Se achar o código na lista, não insere um novo site;*/
@@ -83,7 +87,7 @@ void remove_site(LIST *L){
 
 	/*Se não encontrar o código na lista, não remove;*/
 	if(!code_found(L, code)){
-		printf("ERRO --> site com este código não exite.\n");
+		printf("ERRO --> site com este código não existe.\n");
 	}
 	else if(list_remove(L, code)) printf("Site removido com sucesso!\n");
 }
