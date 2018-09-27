@@ -11,5 +11,6 @@ int site_code(SITE *S);
 int new_keyword(SITE *S);
 int change_relevance(SITE *S);
 void save_site(FILE *fp, SITE *S);
+int check_code(int* code);
 
 #endif
