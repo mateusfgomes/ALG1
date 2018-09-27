@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "site.h"
 
 struct site{
@@ -11,6 +12,35 @@ struct site{
 	char keywords[10][51]; /*palavras-chave*/
 	int n_key; /*quantidade de palavras chave*/
 };
+
+/*Função check_code:
+ Verifica se o codigo nao esta' sendo digitado errado;
+@Parâmetros:
+-O proprio codigo;
+@Retorno:
+-Se houver letras no codigo, retorna -1;
+*/
+int check_code(int* code){
+
+	char* check;
+	int check_size;
+	*code = 0;
+
+	scanf("%ms", &check);
+	check_size = strlen(check);
+	int j = check_size-1;
+
+	for(int i = 0; i < check_size; i++){
+
+		if (check[i] <= 47 || check[i] >= 58){
+			printf("Por favor, digite apenas numeros\n");
+			free(check);
+			return -1;
+		}
+		*code += (int) (check[i] - 48)* pow(10, j--);
+	}
+
+}
 
 /*Função create_site:
  Aloca e retorna um novo site;
