@@ -131,7 +131,6 @@ int main(void){
 		printf("ERRO AO ABRIR ARQUIVO DE LEITURA.\n");
 		return 0;
 	}
-	char* check;
 	int size;
 	int opc = 0;
 
@@ -142,31 +141,22 @@ int main(void){
 	printf("Arquivo de leitura lido com sucesso...\n");
 	print_intro();
 	print_menu();
-	scanf("%ms", &check);
-	size = strlen(check);
-
-	for(int i = 0; i < size; i++){
-		if(check[i] <= 47 || check[i] >= 58){
-			printf("ERRO. Liberando dados e fechando arquivo...\n");
-			printf("Re-execute o programa e digite apenas numeros na opção!!\n");
-			delete_list(L);
-			fclose(fp);
-			printf("FIM DA EXECUÇÃO.\n");
-			free(check);
-			return 1;	
+	opc = check_code(&opc);
+	while(opc == -1){
+		print_menu();
+		opc = check_code(&opc);
+		if(opc >= 7){
+			opc = -1;
+			printf("Por favor, digite apenas numeros presentes nas opcoes\n");
 		}
-		opc += (int) (check[i] - 48) * pow(10, i);
 	}
-
 	while(opc != 5){	
 		int i = 0;
-		if(opc > 6){ 
+		while(opc == -1){
 			printf("ERRO --> OPÇÃO INVÁLIDA.\nPor favor, digite uma das opções apresentadas\n");
 			print_menu();
-			scanf("%d", &opc);
-			continue;
+			opc = check_code(&opc);
 		}
-		if (check != NULL) free(check);
 		switch(opc){
 			case 1: insert_site(L);
 				break;	
@@ -181,26 +171,16 @@ int main(void){
 			case 6:	
 				printf("Você escolheu ver todos os sites:\n");
 				print_list(L);
-				break;		
-				
-				scanf("%ms", &check);
-				free(check);
+				break;
+			default:
+				printf("ERRO --> OPÇÃO INVÁLIDA.\nPor favor, digite uma das opções apresentadas\n");
+				break;	
 		}
 		print_menu();
-		scanf("%ms", &check);
-		size = strlen(check);
-		opc = 0;
-		for(int i = 0; i < size; i++){
-			if(check[i] <= 47 || check[i] >= 58){
-				printf("ERRO. Liberando dados e fechando arquivo...\n");
-				printf("Re-execute o programa e digite apenas numeros na opção!!\n");
-				delete_list(L);
-				fclose(fp);
-				printf("FIM DA EXECUÇÃO.\n");
-				free(check);
-				return 1;	
-			}
-			opc += (int) (check[i] - 48) * pow(10, i);
+		opc = check_code(&opc);
+		while(opc == -1){
+			print_menu();
+			opc = check_code(&opc);
 		}
 	}
 
@@ -210,7 +190,6 @@ int main(void){
 		printf("ERRO AO ESCREVER NO ARQUIVO DE SAÍDA.\n");
 		return 0;
 	}
-	if (check != NULL) free(check);
 	printf("Armazenando dados no arquivo...\n");
 	update_file(fp, L);
 	printf("Dados armazenados com sucesso!\n");
