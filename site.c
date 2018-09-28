@@ -30,17 +30,19 @@ int check_code(int* code){
 	check_size = strlen(check);
 	int j = check_size-1;
 
+
 	for(int i = 0; i < check_size; i++){
 
 		if (check[i] <= 47 || check[i] >= 58){
-			printf("Por favor, digite apenas numeros\n");
+			printf("Por favor, digite apenas numeros presentes nas opcoes\n");
 			free(check);
 			return -1;
 		}
 		*code += (int) (check[i] - 48)* pow(10, j--);
 	}
 
-	return check_size;
+	free(check);
+	return *code;
 }
 
 /*Função create_site:
