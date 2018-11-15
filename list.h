@@ -19,5 +19,6 @@ int list_remove(LIST *L, int code);
 SITE *list_search(LIST *L, int code);
 int code_found(LIST *L, int code);
 void update_file(FILE *fp, LIST *L);
+SITE* list_search_keyword(LIST* L, int place);
 
 #endif
