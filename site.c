@@ -190,3 +190,22 @@ SITE* keyword_found(SITE* root, char search[51]){
 	return NULL;
 
 }
+
+char** site_keywords(SITE* s){
+	if(s == NULL) return NULL;
+	char** sites;
+	sites = (char**) malloc(10*sizeof(char*));
+	for (int i = 0; i < 10; i++)
+		if(s->keywords[i] != NULL) sites[i] = s->keywords[i];
+	
+	return sites;
+}
+
+int site_nkey(SITE* s){
+	if (s == NULL) return -404;
+	return s->n_key;
+}
+
+char* keyword_to_search(char** keywords, int word){
+	return keywords[word];
+}
