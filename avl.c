@@ -183,25 +183,54 @@ void avl_print(AVL* A){
 
 }
 
-void tree_search(NODE* root, char search[51], int* flag, LIST* L){
+void tree_search(NODE* root, char search[51], int* flag, LIST* L, SITE* aux){
 
 	if(root == NULL) return;
-	SITE* aux = keyword_found(root->site, search);
-	if(aux != NULL){
-		int verify = list_insertion_relevance(L, aux);
+	SITE* s = keyword_found(root->site, search);
+	if(s != NULL && site_code(s) != site_code(aux)){
+		int verify = list_insertion_relevance(L, s);
 		*flag = 1;
 	}
-	tree_search(root->left, search, flag, L);
-	tree_search(root->right, search, flag, L);
+	tree_search(root->left, search, flag, L, aux);
+	tree_search(root->right, search, flag, L, aux);
 
 }
 
 int avl_search_keyword(AVL* A, char search[51]){
 
 	int flag = 0;
+	int suggestion;
+	char** suggested_keywords = NULL;
+	LIST* suggestions = NULL;
 	LIST* L = create_list();
-	tree_search(A->root, search, &flag, L);
+	tree_search(A->root, search, &flag, L, NULL);
 	print_list(L);
 	if(!flag) printf("Não foram encontrados sites com essa palavra-chave\n");
-
+	
+	if(flag){	
+		printf("Deseja buscar por sugestoes de sites?\n");
+		printf("0 para Nao\n");
+		printf("1 para Sim\n");
+		scanf("%d", &suggestion);
+		getchar();
+		if(suggestion){
+			suggestions = create_list();
+			int site_pos = 0;
+			while(site_pos < list_size(L)){
+				int word = 0;
+				SITE* aux = list_search_keyword(L, site_pos);
+				while(word < site_nkey(aux)){
+					suggested_keywords = site_keywords(aux);
+					//printf("%s\n", search);
+					if(strcmp(suggested_keywords[word], search)) tree_search(A->root, suggested_keywords[word], &flag, suggestions, aux);
+					free(suggested_keywords);
+					word++;
+				}
+				site_pos++;
+			}
+			print_list(suggestions);
+		}
+	}
+	if(suggestions != NULL) delete_list(suggestions);
+	if(L != NULL) delete_list(L);
 }
