@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "avl.h"
-#include "site.h"
 #define ERROR -404
 
 /*ESTRUTURA DE DADOS USADA: Lista Encadeada Ordenada*/
@@ -26,7 +25,7 @@ AVL *avl_create(void){
 	return tree;
 }
 
-AVL* scan_file(FILE* fp, int n_lines){
+AVL* scan_file_avl(FILE* fp, int n_lines){
 	AVL* aux = avl_create(); 
 	SITE* S;
 	int count = 0;
@@ -38,7 +37,7 @@ AVL* scan_file(FILE* fp, int n_lines){
 	return aux; 
 }
 
-void delete_node(NODE* a){
+void delete_node_avl(NODE* a){
 	if(a != NULL){
 		free(a->site);
 		a = NULL;
@@ -49,7 +48,7 @@ void delete_avl_aux(NODE *root){
 	if(root != NULL){
 		delete_avl_aux(root->left);
 		delete_avl_aux(root->right);
-		delete_node(root);
+		delete_node_avl(root);
 		free(root);
 	}
 }
@@ -161,7 +160,7 @@ int avl_insert(AVL *tree, SITE *site){
 	return ((tree->root = avl_insert_node(tree->root, site)) != NULL);
 }
 
-int code_found(AVL* L, int code){
+int code_found_avl(AVL* L, int code){
 	if(L == NULL) return 0;
 	return (avl_search_code(L->root, code) != NULL);
 }
@@ -174,7 +173,7 @@ void print_tree(NODE* root){
 
 	if(root == NULL) return;
 	print_tree(root->left);
-	print_site(root->site, 0);
+	print_site(root->site);
 	print_tree(root->right);
 
 }
@@ -184,23 +183,25 @@ void avl_print(AVL* A){
 
 }
 
-void tree_search(NODE* root, char search[51], int* flag){
+void tree_search(NODE* root, char search[51], int* flag, LIST* L){
 
 	if(root == NULL) return;
 	SITE* aux = keyword_found(root->site, search);
 	if(aux != NULL){
-		print_site(aux, 1);
+		int verify = list_insertion_relevance(L, aux);
 		*flag = 1;
 	}
-	tree_search(root->left, search, flag);
-	tree_search(root->right, search, flag);
+	tree_search(root->left, search, flag, L);
+	tree_search(root->right, search, flag, L);
 
 }
 
 int avl_search_keyword(AVL* A, char search[51]){
 
 	int flag = 0;
-	tree_search(A->root, search, &flag);
+	LIST* L = create_list();
+	tree_search(A->root, search, &flag, L);
+	print_list(L);
 	if(!flag) printf("Não foram encontrados sites com essa palavra-chave\n");
 
 }
