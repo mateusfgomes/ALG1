@@ -89,7 +89,7 @@ void insert_site(AVL* A){
 		printf("ERRO --> código inválido(intervalo aceito = 0-9999)\n");
 	}
 	/*Se achar o código na lista, não insere um novo site;*/
-	else if(code_found(A, code)){
+	else if(code_found_avl(A, code)){
 		printf("ERRO --> código digitado já existe\n");
 	}	
 	else{
@@ -112,7 +112,7 @@ void remove_site(AVL *A){
 		printf("ERRO --> código inválido(intervalo aceito = 0-9999)\n");
 	}
 	/*Se não encontrar o código na lista, não remove;*/
-	else if(!code_found(A, code)){
+	else if(!code_found_avl(A, code)){
 		printf("ERRO --> site com este código não exite.\n");
 	}
 	else if(avl_remove(A, code)) printf("Site removido com sucesso!\n");
@@ -170,7 +170,7 @@ int main(void){
 	printf("Arquivo de leitura aberto...\n");
 	n_lines = count_lines(fp); /*conta as linhas*/
 	rewind(fp); /*volta ao inicio do arquivo*/
-	A = scan_file(fp, n_lines); /*le o arquivo*/
+	A = scan_file_avl(fp, n_lines); /*le o arquivo*/
 	printf("Arquivo de leitura lido com sucesso...\n");
 	int opc = 0;
 	print_intro();
