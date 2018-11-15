@@ -10,6 +10,7 @@ LIST* create_list(void);
 void delete_list(LIST *L);
 void delete_node(NODE *N);
 LIST* scan_file(FILE* fp, int n_lines);
+int list_insertion_relevance(LIST *L, SITE *S);
 int list_insertion(LIST *L, SITE *S);
 int empty_list(LIST *L);
 int list_size(LIST *L);
