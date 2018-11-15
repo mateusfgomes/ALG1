@@ -52,26 +52,18 @@ SITE *read_file_sites(FILE *fp){
 @Parâmetros:
 -O site a ser imprimido;
 */
-void print_site(SITE *S, int type){
-	if(!type){
-		printf("-----------------------------------------\n");
-		printf("Código: %d\n", S->code);
-		printf("Nome: %s\n", S->name);
-		printf("Relevância: %d\n", S->relevance);
-		printf("Link: %s\n", S->link);
-		int i;
-		for(i=0; i<S->n_key; i++){
-			printf("Palavra-chave %d: %s\n", i+1,S->keywords[i]);
-		}
-		printf("------------------------------------------\n");
+void print_site(SITE *S){
+	
+	printf("-----------------------------------------\n");
+	printf("Código: %d\n", S->code);
+	printf("Nome: %s\n", S->name);
+	printf("Relevância: %d\n", S->relevance);
+	printf("Link: %s\n", S->link);
+	int i;
+	for(i=0; i<S->n_key; i++){
+		printf("Palavra-chave %d: %s\n", i+1,S->keywords[i]);
 	}
-	if(type){
-		printf("-----------------------------------------\n");
-		printf("Sites encontrados na busca:\n");
-		printf("Nome: %s\n", S->name);
-		printf("Link: %s\n", S->link);
-		printf("-----------------------------------------\n");
-	}
+	printf("------------------------------------------\n");
 }
 
 /*Função read_new_site:
@@ -123,6 +115,11 @@ SITE *read_new_site(int code, int relevance){
 int site_code(SITE *S){
 	if(S == NULL) return 0;		
 	return S->code;
+}
+
+int site_relevance(SITE *S){
+	if(S == NULL) return 0;		
+	return S->relevance;
 }
 
 /*Função new_keyword:
