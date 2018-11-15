@@ -221,3 +221,35 @@ void update_file(FILE *fp, LIST *L){
 		}
 	}	
 }
+
+int list_insertion_relevance(LIST *L, SITE *S){ 
+ 	if(L == NULL || S == NULL) return 0;
+	NODE *new = (NODE *) malloc(sizeof(NODE)), *search = NULL, *previous = NULL;		/*
+	search -> nó posicionado onde deveria estar o new;
+	previous -> nó anterior à search		
+	new -> novo nó a ser inserido entre o previous e o search; */
+	if(new != NULL){
+		new->site = S;
+		new->next = NULL;
+		if(empty_list(L)){ /*LISTA VAZIA*/
+			L->start = new;
+		}else{
+			search = L->start;
+			while((search != NULL) && (site_relevance(search->site) > site_relevance(new->site))){
+				previous = search;
+				search = search->next; /*previous recebe o nó anterior de search*/
+			}
+			if(search == L->start){ /*CASO PARTICULAR: inserir como primeiro elemento*/
+				new->next = search;
+				L->start = new;
+			}
+			else{
+				new->next = previous->next;
+				previous->next = new;
+			}
+		}
+		L->size++;
+		return 1;
+	}
+	return 0;
+}
