@@ -54,7 +54,6 @@ void delete_list(LIST *L){
 -Um nó;*/
 void delete_node(NODE *N){
 	if(N != NULL){
-		free(N->site);
 		free(N);
 		N = NULL;
 	}
@@ -77,7 +76,7 @@ LIST* scan_file(FILE* fp, int n_lines){
 }
 
 /*Função list_insertion:
- Insere um novo śite em uma lista;
+ Insere um novo site em uma lista;
 @Parâmetros:
 -Ponteiros para a lista e para o site;
 @Retorno:
@@ -228,6 +227,14 @@ int list_insertion_relevance(LIST *L, SITE *S){
 	search -> nó posicionado onde deveria estar o new;
 	previous -> nó anterior à search		
 	new -> novo nó a ser inserido entre o previous e o search; */
+	NODE* aux = L->start;
+	int check = 0;
+	while(check < L->size){
+		if(site_code(S) == site_code(aux->site))
+			return 1;
+		aux = aux->next;
+		check++;
+	}
 	if(new != NULL){
 		new->site = S;
 		new->next = NULL;
@@ -252,4 +259,22 @@ int list_insertion_relevance(LIST *L, SITE *S){
 		return 1;
 	}
 	return 0;
+}
+
+SITE* list_search_keyword(LIST* L, int place){
+
+	NODE* aux = L->start;
+	int position = 0;
+	while(position < place){
+		aux = aux->next;
+		position++;
+	}
+	return aux->site;
+
+}
+
+int list_size(LIST* L){
+	if(L != NULL){
+		return L->size;
+	}
 }
