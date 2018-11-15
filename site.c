@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "site.h"
 
 struct site{
@@ -12,38 +11,6 @@ struct site{
 	char keywords[10][51]; /*palavras-chave*/
 	int n_key; /*quantidade de palavras chave*/
 };
-
-/*Função check_code:
- Verifica se o codigo nao esta' sendo digitado errado;
-@Parâmetros:
--O proprio codigo;
-@Retorno:
--Se houver letras no codigo, retorna -1;
-*/
-int check_code(int* code){
-
-	char* check;
-	int check_size;
-	*code = 0;
-
-	scanf("%ms", &check);
-	check_size = strlen(check);
-	int j = check_size-1;
-
-
-	for(int i = 0; i < check_size; i++){
-
-		if (check[i] <= 47 || check[i] >= 58){
-			printf("Por favor, digite apenas numeros presentes nas opcoes\n");
-			free(check);
-			return -1;
-		}
-		*code += (int) (check[i] - 48)* pow(10, j--);
-	}
-
-	free(check);
-	return *code;
-}
 
 /*Função create_site:
  Aloca e retorna um novo site;
@@ -85,39 +52,47 @@ SITE *read_file_sites(FILE *fp){
 @Parâmetros:
 -O site a ser imprimido;
 */
-void print_site(SITE *S){
-	printf("-----------------------------------------\n");
-	printf("Código: %d\n", S->code);
-	printf("Nome: %s\n", S->name);
-	printf("Relevância: %d\n", S->relevance);
-	printf("Link: %s\n", S->link);
-	int i;
-	for(i=0; i<S->n_key; i++){
-		printf("Palavra-chave %d: %s\n", i+1,S->keywords[i]);
+void print_site(SITE *S, int type){
+	if(!type){
+		printf("-----------------------------------------\n");
+		printf("Código: %d\n", S->code);
+		printf("Nome: %s\n", S->name);
+		printf("Relevância: %d\n", S->relevance);
+		printf("Link: %s\n", S->link);
+		int i;
+		for(i=0; i<S->n_key; i++){
+			printf("Palavra-chave %d: %s\n", i+1,S->keywords[i]);
+		}
+		printf("------------------------------------------\n");
 	}
-	printf("------------------------------------------\n");
+	if(type){
+		printf("-----------------------------------------\n");
+		printf("Sites encontrados na busca:\n");
+		printf("Nome: %s\n", S->name);
+		printf("Link: %s\n", S->link);
+		printf("-----------------------------------------\n");
+	}
 }
 
 /*Função read_new_site:
  Lê dados digitados pelo usuário e os armazena em um novo site alocado, retornando o mesmo;
 @Parâmetros:
--Um inteiro representando o código do novo site;
+-Dois inteiros, um é o código e o outro é a relevância do novo site;
 @Retorno:
 -Se bem sucedida, retorna o ponteiro do novo site. Caso contrário, retorna NULL;*/
-SITE *read_new_site(int code){
+SITE *read_new_site(int code, int relevance){
 	SITE *new = create_site();
 	new->code = code;
-	char c = getchar(); /*OBS: essa variável c existe para pegar os '\n' que sobram do stdin*/
-	printf("Nome(string) = ");
-	scanf("%[^\n]%c", new->name, &c);
-	printf("Relevância(int) = ");
-	scanf("%d%c", &new->relevance, &c);
+	new->relevance = relevance;
 	/*Confere se a relevância está no intervalo permitido:*/
 	if(new->relevance < 0 || new->relevance > 1000){
 		printf("ERRO --> número inválido para relevancia(0-1000).\n");
 		printf("Valor de relevância resetado para 0.\n");
 		new->relevance = 0;
 	}
+	char c; /*OBS: essa variável c existe para pegar os '\n' que sobram do stdin*/
+	printf("Nome(string) = ");
+	scanf("%[^\n]%c", new->name, &c);
 	printf("Link(string) = ");
 	scanf("%[^\n]%c", new->link, &c);
 	printf("Quantas palavras chave?(int) ");
@@ -167,6 +142,7 @@ int new_keyword(SITE *S){
 	}
 	printf("Digite a palavra-chave = ");
 	scanf("%s", S->keywords[S->n_key++]);
+	getchar();
 	return 1;
 }
 
@@ -176,19 +152,16 @@ int new_keyword(SITE *S){
 -Um ponteiro para site;
 @Retorno:
 -Se bem sucedida, retorna 1. Caso contrário, retorna 0;*/
-int change_relevance(SITE *S){
+int change_relevance(SITE *S, int relevance){
 	if(S == NULL){
 		printf("ERRO --> Site não encontrado.\n");
 		return 0;
 	}
-	printf("Digite a nova relevancia = ");
-	int r;
-	scanf("%d", &r);
-	if(r < 0 || r > 1000){
+	if(relevance < 0 || relevance > 1000){
 		printf("ERRO --> número inválido para relevancia(0-1000).\n");
 		return 0;
 	}
-	S->relevance = r;
+	S->relevance = relevance;
 	return 1;
 }
 /*Função save_site:
@@ -196,10 +169,27 @@ int change_relevance(SITE *S){
 @Parâmetros:
 -Um ponteiro para arquivo e um para site;*/
 void save_site(FILE *fp, SITE *S){
-	fprintf(fp, "%d,%s,%d,%s", S->code, S->name, S->relevance, S->link);
+	fprintf(fp, "%d,%s,%d,%s,", S->code, S->name, S->relevance, S->link);
 	int i;
 	for(i=0; i<S->n_key; i++){
-		fprintf(fp, ",%s", S->keywords[i]);
+		fprintf(fp, "%s,", S->keywords[i]);
+	}
+	if(S->n_key != 0){
+		fseek(fp, -1L, SEEK_CUR);
 	}
 	fprintf(fp, "\n");
+}
+
+
+SITE* keyword_found(SITE* root, char search[51]){
+
+	int count = 0;
+	while(count < root->n_key){
+		if(!(strcmp(root->keywords[count], search))){
+			return root;
+		}
+		count++;
+	}
+	return NULL;
+
 }
