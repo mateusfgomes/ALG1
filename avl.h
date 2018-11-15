@@ -1,5 +1,6 @@
 #ifndef AVL_H
 #define AVL_H
+#include <string.h>
 #include "site.h"
 #include "list.h"
 
@@ -28,7 +29,7 @@ SITE* avl_search(NODE* root, int code);
 NODE* avl_root(AVL* T);
 void avl_print(AVL* A);
 int avl_search_keyword(AVL* A, char search[51]);
-void tree_search(NODE* root, char search[51], int* flag, LIST* L);
+void tree_search(NODE* root, char search[51], int* flag, LIST* L, SITE* aux);
 
 
 #endif
