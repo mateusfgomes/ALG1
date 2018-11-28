@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "avl.h"
 #define ERROR -404
 
-/*ESTRUTURA DE DADOS USADA: Lista Encadeada Ordenada*/
 struct node{
-	SITE* site;
+	char *keyword;
 	NODE* left;
 	NODE* right;
 	int height;
@@ -16,6 +16,11 @@ struct avl{
 	int depth;
 };
 
+
+/*Função avl_create:
+ Cria uma nova árvore AVL;
+@Retorno:
+-A árvore criada;*/
 AVL *avl_create(void){
 	AVL *tree = (AVL *) malloc(sizeof (AVL));
 	if(tree != NULL){
@@ -25,40 +30,46 @@ AVL *avl_create(void){
 	return tree;
 }
 
-AVL* scan_file_avl(FILE* fp, int n_lines){
-	AVL* aux = avl_create(); 
-	SITE* S;
-	int count = 0;
-	while(count < n_lines){
-		S = read_file_sites(fp);
-		if(avl_insert(aux, S)) printf("NOVO SITE INSERIDO COM SUCESSO...\n");
-		count++;
-	}
-	return aux; 
-}
-
-void delete_node_avl(NODE* a){
-	if(a != NULL){
-		free(a->site);
-		a = NULL;
-	}
-}
-
-void delete_avl_aux(NODE *root){
-	if(root != NULL){
-		delete_avl_aux(root->left);
-		delete_avl_aux(root->right);
-		delete_node_avl(root);
-		free(root);
-	}
-}
-
+/*Função avl_delete:
+ Desaloca uma árvore AVL;
+@Parâmetros:
+-Um ponteiro para o árvore AVL;*/
 void avl_delete(AVL **tree){
 	delete_avl_aux((*tree)->root);
 	free(*tree);
 	*tree = NULL;
 }
 
+/*Função delete_avl_aux:
+ Desaloca os nós de uma árvore AVL;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;*/
+void delete_avl_aux(NODE *root){
+	if(root != NULL){
+		delete_avl_aux(root->left);
+		delete_avl_aux(root->right);
+		delete_node_avl(root);
+	}
+}
+
+/*Função delete_node_avl:
+ Desaloca um nó de uma árvore;
+@Parâmetros:
+-Um ponteiro para um nó;*/
+void delete_node_avl(NODE* a){
+	if(a != NULL){
+		free(a->keyword);
+		free(a);
+		a = NULL;
+	}
+}
+
+/*Função avl_height_node:
+ Retorna a altura de uma árvore AVL;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;
+@Retorno:
+-A altura da árvore AVL;*/
 int avl_height_node(NODE* root){
 	if(root == NULL){
 		return -1;
@@ -67,17 +78,30 @@ int avl_height_node(NODE* root){
 	}
 }
 
-NODE *avl_create_node(SITE *site){
+/*Função avl_create_node:
+ Aloca um novo nó em uma árvore AVL;
+@Parâmetros:
+-A palavra-chave do novo nó;
+@Retorno:
+-O nó criado;*/
+NODE *avl_create_node(char keyword[51]){
 	NODE *node = (NODE *) malloc(sizeof (NODE));
 	if(node != NULL){
 		node->height = 0;
 		node->right = NULL;
 		node->left = NULL;
-		node->site = site;
+		node->keyword = (char *) malloc(51 * sizeof(char));
+		strcpy(node->keyword, keyword);
 	}
 	return node;
 }
 
+/*Função rotate_right:
+ Rotaciona a árvore AVL para a direita;
+@Parâmetros:
+-Um ponteiro para o nó da árvore AVL que se deseja rotacionar;
+@Retorno:
+-O filho esquerdo do nó problemático*/
 NODE *rotate_right(NODE *a){
 	NODE *b = a->left;
 	a->left = b->right;
@@ -87,6 +111,12 @@ NODE *rotate_right(NODE *a){
 	return b;
 }
 
+/*Função rotate_left:
+ Rotaciona a árvore AVL para a esquerda;
+@Parâmetros:
+-Um ponteiro para o nó da árvore AVL que se deseja rotacionar;
+@Retorno:
+-O filho direito do nó problemático*/
 NODE *rotate_left(NODE *a){
 	NODE *b = a->right;
 	a->right = b->left;
@@ -96,37 +126,53 @@ NODE *rotate_left(NODE *a){
 	return b;
 }
 
+/*Função rotate_left_right:
+ Rotaciona a árvore AVL para a esquerda e para a direita;
+@Parâmetros:
+-Um ponteiro para o nó da árvore AVL que se deseja rotacionar;
+@Retorno:
+-O filho esquerdo do nó problemático*/
 NODE *rotate_left_right(NODE *a){
 	a->left = rotate_left(a->left);
 	return rotate_right(a);
 }
 
+/*Função rotate_right_left:
+ Rotaciona a árvore AVL para a direita e para a esquerda;
+@Parâmetros:
+-Um ponteiro para o nó da árvore AVL onde se deseja rotacionar;
+@Retorno:
+-O filho direito do nó problemático*/
 NODE *rotate_right_left(NODE *a){
 	a->right = rotate_right(a->right);
 	return rotate_left(a);
 }
 
-NODE *avl_insert_node(NODE *root, SITE *site){
-	
+/*Função avl_insert_node:
+ Insere um novo nó na árvore AVL;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;
+-O nome do novo nó que se deseja inserir na árvore AVL;
+@Retorno:
+-O nó raiz;*/
+NODE *avl_insert_node(NODE *root, char keyword[51]){
 	if(root == NULL){
-		root = avl_create_node(site);
+		root = avl_create_node(keyword);
 	}
-	
-	else if(site_code(site) > site_code(root->site)){
-		root->right = avl_insert_node(root->right, site);
+	else if(strcmp(keyword, root->keyword) > 0){
+		root->right = avl_insert_node(root->right, keyword);
 		if(avl_height_node(root->left) - avl_height_node(root->right) == -2){
-			if(site_code(site) > site_code(root->right->site)){
+			if(strcmp(keyword, root->right->keyword) > 0){
 				root = rotate_left(root);
 			}else{
 				root = rotate_right_left(root);
 			}
 		}
 	}
-
-	else if(site_code(site) < site_code(root->site)){
-		root->left = avl_insert_node(root->left, site);
+	else if(strcmp(keyword, root->keyword) < 0){
+		root->left = avl_insert_node(root->left, keyword);
 		if(avl_height_node(root->left) - avl_height_node(root->right) == 2){
-			if(site_code(site) < site_code(root->left->site)){
+			if(strcmp(keyword, root->left->keyword) < 0){
 				root = rotate_right(root);
 			}else{
 				root = rotate_left_right(root);
@@ -137,100 +183,111 @@ NODE *avl_insert_node(NODE *root, SITE *site){
 	return root;
 }
 
-NODE* avl_search_code(NODE* root, int code){
-	if(root == NULL) return NULL;
-	if(code == site_code(root->site)) return root;
-	else if(code < site_code(root->site)) return avl_search_code(root->left, code);
-	else return avl_search_code(root->right, code);
+/*Função avl_insert:
+ Chama a função avl_insert para inserir um novo nó na árvore AVL, passando como parâmetro a raiz da árvore AVL e o nome de um nó;
+@Parâmetros:
+-Um ponteiro para a árvore AVL;
+@Retorno:
+-1 se a inserção foi bem sucessida, ou 0 caso contrário;*/
+int avl_insert(AVL *tree, char keyword[51]){
+	return ((tree->root = avl_insert_node(tree->root, keyword)) != NULL);
 }
 
-NODE* avl_root(AVL* T){
-	if(T == NULL) return NULL;
-	return T->root;
+/*Função avl_print:
+ Chama a função print_tree, que imprime todos os itens da árvore AVL, passando como parâmetro a raiz da árvore AVL;
+@Parâmetros:
+-Um ponteiro para a árvore AVL;*/
+void avl_print(AVL* tree){
+	print_tree(tree->root);
 }
 
-SITE* avl_search(NODE* root, int code){
-	if(root == NULL) return NULL;
-	NODE* aux = avl_search_code(root, code);
-	if(aux == NULL) return NULL;
-	return aux->site;
-}
-
-int avl_insert(AVL *tree, SITE *site){
-	return ((tree->root = avl_insert_node(tree->root, site)) != NULL);
-}
-
-int code_found_avl(AVL* L, int code){
-	if(L == NULL) return 0;
-	return (avl_search_code(L->root, code) != NULL);
-}
-
-int avl_remove(AVL* A, int code){
-	return 1;
-}
-
+/*Função print_tree:
+ Imprime todos os itens da árvore AVL;
+@Parâmetros:
+-Um ponteiro para o nó da árvore AVL onde se deseja rotacionar;*/
 void print_tree(NODE* root){
-
 	if(root == NULL) return;
 	print_tree(root->left);
-	print_site(root->site);
+	printf("%s\n", root->keyword);
 	print_tree(root->right);
-
 }
 
-void avl_print(AVL* A){
-	print_tree(A->root);
-
+/*Função avl_root:
+ Retorna o nó raiz da árvore AVL;
+@Parâmetros:
+-Um ponteiro para a árvore AVL;
+@Retorno:
+-O nó raiz da árvore AVL*/
+NODE* avl_root(AVL* tree){
+	if(tree == NULL) return NULL;
+	return tree->root;
 }
 
-void tree_search(NODE* root, char search[51], int* flag, LIST* L, SITE* aux){
+/*Função avl_save:
+ Chama a função avl_save, que passa o conteúdo da árvore AVL para um arquivo;
+@Parâmetros:
+-Um ponteiro para a árvore AVL;
+-Um ponteiro para um arquivo;*/
+void avl_save(AVL *tree, FILE *fp){
+	tree_save(tree->root, fp);
+}
 
+/*Função tree_save:
+ Salva o conteúdo da árvore AVL para um arquivo;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;
+-O arquivo onde se deseja salvar o conteúdo da árvore;*/
+void tree_save(NODE *root, FILE *fp){
 	if(root == NULL) return;
-	SITE* s = keyword_found(root->site, search);
-	if(s != NULL && site_code(s) != site_code(aux)){
-		int verify = list_insertion_relevance(L, s);
-		*flag = 1;
-	}
-	tree_search(root->left, search, flag, L, aux);
-	tree_search(root->right, search, flag, L, aux);
-
+	tree_save(root->left, fp);
+	fprintf(fp, "%s,", root->keyword);
+	tree_save(root->right, fp);
 }
 
-int avl_search_keyword(AVL* A, char search[51]){
+/*Função tree_save:
+ Salva o conteúdo da árvore AVL para um arquivo;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;
+-O arquivo onde se deseja salvar o conteúdo da árvore;*/
+int avl_search(AVL *tree, char keyword[51]){
+	return avl_search_aux(tree->root, keyword);
+}
 
-	int flag = 0;
-	int suggestion;
-	char** suggested_keywords = NULL;
-	LIST* suggestions = NULL;
-	LIST* L = create_list();
-	tree_search(A->root, search, &flag, L, NULL);
-	print_list(L);
-	if(!flag) printf("Não foram encontrados sites com essa palavra-chave\n");
-	
-	if(flag){	
-		printf("Deseja buscar por sugestoes de sites?\n");
-		printf("0 para Nao\n");
-		printf("1 para Sim\n");
-		scanf("%d", &suggestion);
-		getchar();
-		if(suggestion){
-			suggestions = create_list();
-			int site_pos = 0;
-			while(site_pos < list_size(L)){
-				int word = 0;
-				SITE* aux = list_search_keyword(L, site_pos);
-				while(word < site_nkey(aux)){
-					suggested_keywords = site_keywords(aux);
-					//printf("%s\n", search);
-					if(strcmp(suggested_keywords[word], search)) tree_search(A->root, suggested_keywords[word], &flag, suggestions, aux);
-					free(suggested_keywords);
-					word++;
-				}
-				site_pos++;
-			}
-			print_list(suggestions);
-		}
-	}
-	if(suggestions != NULL) delete_list(suggestions);
-	if(L != NULL) delete_list(L);
+/*Função avl_search_aux:
+ Procura um nó em uma árvore AVL através de sua palavra-chave;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;
+-A palavra-chave do nó que se deseja encontrar;
+@Retorno:
+-1 se o nó foi encontrado, ou 0 caso contrário */
+int avl_search_aux(NODE *root, char keyword[51]){
+	if(root == NULL) return 0;
+	if(!strcmp(root->keyword, keyword)) return 1;
+	if(strcmp(root->keyword, keyword) < 0) return avl_search_aux(root->right, keyword);
+	return avl_search_aux(root->left, keyword);
+}
+
+/*Função avl_copy_keywords:
+ Chama a função avl_copy_aux, que copia as palavras-chave de uma árvore AVL para um vetor;
+@Parâmetros:
+-Um ponteiro para a árvore AVL;
+-Um ponteiro para um vetor de palavras-chave;*/
+void avl_copy_keywords(AVL *tree, char **keywords){
+	int i=0;
+	avl_copy_aux(tree->root, keywords, &i);
+}
+
+/*Função avl_copy_aux:
+ Percorre a árvore AVL e copia as palavras-chave para um vetor;
+@Parâmetros:
+-Um ponteiro para o nó raiz da árvore AVL;
+-Um ponteiro para um vetor de palavras-chave;
+-Um ponteiro auxiliar;*/
+void avl_copy_aux(NODE *root, char **keywords, int *i){
+	if(root == NULL) return;
+	keywords[*i] = (char *) malloc(51 * sizeof(char));
+	strcpy(keywords[*i], root->keyword);
+	(*i)++;
+	avl_copy_aux(root->left, keywords, i);
+	avl_copy_aux(root->right, keywords, i);
 }

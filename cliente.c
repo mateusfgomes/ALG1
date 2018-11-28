@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "avl.h"
+#include "list.h"
 #include "site.h"
 
 /*Função count_lines:
@@ -10,7 +10,7 @@
 -Um ponteiro para o arquivo;
 @Retorno:
 -O número de linhas do arquivo;*/
-int count_lines(FILE* file){
+int count_lines(FILE* file){	
 	int count = 0;
 	char h;
     while((fscanf(file, "%c", &h)) != EOF){
@@ -66,13 +66,15 @@ void print_intro(){
  Imprime um menu de escolhas;*/
 void print_menu(){
 	printf("------------------------------------------\n");	
-	printf("Opção 1: Inserir um site;\n");
-	printf("Opção 2: Remover um site;\n");
-	printf("Opção 3: Inserir palavra-chave;\n");
-	printf("Opção 4: Atualizar relevância;\n");
-	printf("Opção 5: Sair;\n");
-	printf("Opção 6: Mostrar sites;\n");
-	printf("Opção 7: Buscar uma palavra-chave;\n");
+	printf("Opção 1: Sugestão de sites;\n");
+	printf("Opção 2: Buscar por palavra-chave;\n");
+	printf("Opção 3: Mostrar todos os sites;\n");
+	printf("Opção 4: Sair;\n");
+	printf("Opção 5: Inserir um site;\n");
+	printf("Opção 6: Remover um site;\n");
+	printf("Opção 7: Inserir palavra-chave;\n");
+	printf("Opção 8: Atualizar relevância;\n");
+	/*printf("Opção 9: Remover palavra-chave;\n");*/	
 	printf("------------------------------------------\n");		
 }
 
@@ -80,7 +82,7 @@ void print_menu(){
  Insere um novo site em uma lista;
 @Parâmetros:
 -Um ponteiro para a lista;*/
-void insert_site(AVL* A){
+void insert_site(LIST *L){
 	printf("Você escolheu inserir um site.\n");
 	printf("Digite os seguintes elementos do novo site:\n");
 	printf("Código(int) = ");
@@ -89,13 +91,13 @@ void insert_site(AVL* A){
 		printf("ERRO --> código inválido(intervalo aceito = 0-9999)\n");
 	}
 	/*Se achar o código na lista, não insere um novo site;*/
-	else if(code_found_avl(A, code)){
+	else if(code_found(L, code)){
 		printf("ERRO --> código digitado já existe\n");
 	}	
 	else{
 		printf("Relevância(int) = ");
 		relevance = read_number(); 
-		if(avl_insert(A, read_new_site(code, relevance))) printf("Site inserido com sucesso!\n");
+		if(list_insertion(L, read_new_site(code, relevance))) printf("Site inserido com sucesso!\n");
 		else printf("ERRO --> Limite de memória atingido\n");
 	}	
 }
@@ -104,7 +106,7 @@ void insert_site(AVL* A){
  Remove um site de uma lista;
 @Parâmetros:
 -Um ponteiro para lista;*/
-void remove_site(AVL *A){
+void remove_site(LIST *L){
 	printf("Você escolheu remover um site.\n");	
 	printf("Digite o código do site a ser removido: ");
 	int code = read_number();
@@ -112,31 +114,31 @@ void remove_site(AVL *A){
 		printf("ERRO --> código inválido(intervalo aceito = 0-9999)\n");
 	}
 	/*Se não encontrar o código na lista, não remove;*/
-	else if(!code_found_avl(A, code)){
+	else if(!code_found(L, code)){
 		printf("ERRO --> site com este código não exite.\n");
 	}
-	else if(avl_remove(A, code)) printf("Site removido com sucesso!\n");
+	else if(list_remove(L, code)) printf("Site removido com sucesso!\n");
 }
 
 /*Função insert_keyword:
  Insere uma palavra-chave em um site na lista;
 @Parâmetros:
 -Um ponteiro para lista;*/
-void insert_keyword(AVL *A){
+void insert_keyword(LIST *L){
 	printf("Você escolheu inserir uma nova palavra-chave.\n");	
 	printf("Digite o código do site que vai receber a nova palavra-chave: ");
 	int code = read_number();
 	if(code < 0 || code > 9999){
 		printf("ERRO --> código inválido(intervalo aceito = 0-9999)\n");
 	}
-	else if(new_keyword(avl_search(avl_root(A), code))) printf("Palavra-chave adicionada com sucesso!\n");	
+	else if(new_keyword(list_search(L, code))) printf("Palavra-chave adicionada com sucesso!\n");;		
 }
 
 /*Função update_relevance:
  Atualiza a relevância de um sita na lista;
 @Parâmetros:
 -Um ponteiro para lista;*/
-void update_relevance(AVL *A){
+void update_relevance(LIST *L){
 	printf("Você escolheu atualizar a relevância de um site.\n");	
 	printf("Digite o código do site que vai ter a relevância atualizada: ");
 	int code = read_number();
@@ -145,24 +147,47 @@ void update_relevance(AVL *A){
 	}else{
 		printf("Digite a nova relevancia = ");
 		int relevance = read_number();
-		if(change_relevance(avl_search(avl_root(A), code), relevance)) printf("Relevância atualizada com sucesso!\n"); 	
+		if(change_relevance(list_search(L, code), relevance)) printf("Relevância atualizada com sucesso!\n"); 	
 	}	
 }
+/*
+int wanna_suggestion(){
+	printf("Deseja uma sugestão de sites relacionados à busca?\n");
+	int op = 2;
+	while(op != 0 && op != 1){
+		printf("Digite < 1 > para sim ou < 0 > para não:\n");
+		op = read_number();
+	}
+	return op;
+}*/
 
-void search_keyword(AVL* A){
+void keyword_search(LIST *L){
 	printf("Você escolheu buscar por palavra-chave.\n");
 	printf("Digite a palavra-chave a ser buscada: ");
-	char search[51];
+	char keyword[51];
 	char c;
-	scanf("%[^\n]%c", search, &c);
-	avl_search_keyword(A, search);
+	scanf("%[^\n]%c", keyword, &c);
+	keyword[strlen(keyword)] = '\0';
+	LIST *search_list = list_keyword_search(L, keyword);
+	if(search_list != NULL){
+		delete_aux_list(search_list);
+	}
+}
 
+void site_suggestions(LIST *L){
+	printf("Você escolheu uma sugestão de sites relacionados a uma palavra-chave.\n");
+	printf("Digite a palavra-chave: ");
+	char keyword[51];
+	char c;
+	scanf("%[^\n]%c", keyword, &c);
+	keyword[strlen(keyword)] = '\0';
+	list_suggestions(L, keyword);	
 }
 
 int main(void){
 	FILE* fp; /*ponteiro para arquivo*/
 	int n_lines; /*variavel que armazena o numero de linhas do arquivo*/
-	AVL* A = NULL;
+	LIST* L = NULL;
 	if((fp = fopen("googlebot.txt", "r")) == NULL){ /*abre o arquivo googlebot.txt em modo leitura*/
 		printf("ERRO AO ABRIR ARQUIVO DE LEITURA.\n");
 		return 0;
@@ -170,7 +195,7 @@ int main(void){
 	printf("Arquivo de leitura aberto...\n");
 	n_lines = count_lines(fp); /*conta as linhas*/
 	rewind(fp); /*volta ao inicio do arquivo*/
-	A = scan_file_avl(fp, n_lines); /*le o arquivo*/
+	L = scan_file(fp, n_lines); /*le o arquivo*/
 	printf("Arquivo de leitura lido com sucesso...\n");
 	int opc = 0;
 	print_intro();
@@ -178,37 +203,39 @@ int main(void){
 		print_menu();
 		opc = read_number();
 		switch(opc){
-			case 1: insert_site(A);
+			case 1: site_suggestions(L);
 				break;	
-			case 2:	remove_site(A);
+			case 2:	keyword_search(L);
 				break;
-			case 3:	insert_keyword(A);
+			case 3:	
+				printf("Você escolheu ver todos os sites:\n");	
+				print_list(L);
 				break;
-			case 4:	update_relevance(A);	
+			case 4:	printf("Encerrando execução...\n");
 				break;						
-			case 5: printf("Encerrando execução...\n");
-				break;
-			case 6:	
-				printf("Você escolheu ver todos os sites:\n");
-				avl_print(A);
-				break;
-			case 7: search_keyword(A);
+			case 5: insert_site(L);
+				break;	
+			case 6:	remove_site(L);
 				break;		
+			case 7: insert_keyword(L);
+				break;
+			case 8: update_relevance(L);	
+				break;
 			default: printf("ERRO --> OPÇÃO INVÁLIDA.\nPor favor, digite uma das opções apresentadas:\n");
 		}
 	}
 	/*Guarda os dados de volta no arquivo:*/
 	fclose(fp);
-	/*if((fp = fopen("googlebot.txt", "w+")) == NULL){ /*abre o arquivo googlebot.txt em modo escrita*/
+	/*if((fp = fopen("googlebot.txt", "w+")) == NULL){*/ /*abre o arquivo googlebot.txt em modo escrita*/
 	/*	printf("ERRO AO ESCREVER NO ARQUIVO DE SAÍDA.\n");
 		return 0;
 	}*/
 	printf("Armazenando dados no arquivo...\n");
-	//update_file(fp, L);
+	/*update_file(fp, L);*/
 	printf("Dados armazenados com sucesso!\n");
 	printf("Liberando dados e fechando arquivo...\n");
-	avl_delete(&A);
-	//fclose(fp);
+	delete_list(L);
+	/*fclose(fp);*/
 	printf("FIM DA EXECUÇÃO.\n");
 	return 0;
 }
